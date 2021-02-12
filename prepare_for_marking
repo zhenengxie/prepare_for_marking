@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2.pdf import PageObject
+
+WIDTH = 580
+MARGIN = 100
+
+filename = sys.argv[1][:-4]
+
+with open(filename + ".pdf", 'rb') as f:
+    pdf = PdfFileReader(f)
+
+    p = pdf.getPage(1)
+    w = p.mediaBox.getWidth()
+    scale = float(WIDTH / w)
+
+command = """cpdf -scale-page "{0:f} {0:f}" "{1}.pdf" -o "{1}_scaled.pdf" """
+os.system(command.format(scale, filename))
+
+os.system("""mkdir -p marked""")
+pad_command = """pdfjam --fitpaper true --trim "0cm 0cm -5cm 0cm" "{0}_scaled.pdf" -o "marked/{0}_marked.pdf" """
+os.system(pad_command.format(filename))
+
+os.system("""rm "{0}_scaled.pdf" """.format(filename))
